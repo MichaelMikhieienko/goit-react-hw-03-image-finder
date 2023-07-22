@@ -1,8 +1,24 @@
-// App.jsx
-import * as React from 'react';
+import React from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
-import ImageGalleryItem from './ImageGalleryItem/ImageGalleryItem';
-import Loader from './Loader/Loader';
-import Button from './Button/Button';
-import Modal from './Modal/Modal';
+
+class App extends React.Component {
+  state = {
+    filter: '',
+  };
+
+  handleSubmit = (searchQuery) => {
+    this.setState({ filter: searchQuery });
+  };
+
+  render() {
+    return (
+      <div>
+        <Searchbar onSubmit={this.handleSubmit} />
+        <ImageGallery searchQuery={this.state.filter} />
+      </div>
+    );
+  }
+}
+
+export default App;
