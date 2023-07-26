@@ -1,0 +1,22 @@
+const baseUrl = 'https://pixabay.com/api/';
+const apiKey = '35106771-5ec042213d922cbd410dda217';
+
+const getImage = async params => {
+  const url = new URL(baseUrl);
+
+  url.searchParams.append('key', apiKey);
+
+  Object.keys(params).forEach(key => {
+    url.searchParams.append(key, params[key]);
+  });
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error('Error fetching data');
+  }
+
+  return response.json();
+};
+
+export default getImage;
