@@ -41,19 +41,29 @@ class ImageGallery extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.searchQuery !== this.props.searchQuery) {
-      this.setState({ images: [], error: null }, () => this.fetchImages());
+      this.setState({ images: [], error: null, page: 1 }, () =>
+        this.fetchImages()
+      );
+    }
+
+    if (prevState.page !== this.state.page) {
+      this.fetchImages();
     }
   }
 
   fetchImages = () => {
     const { searchQuery } = this.props;
 
-    this.setState({ isLoading: true, page: 1 }, () => {
+    this.setState({ isLoading: true }, () => {
       const { page } = this.state;
 
       getImage({ q: searchQuery, page, per_page: this.perPage })
         .then(data =>
-          this.setState({ images: data.hits, total: data.totalHits })
+          this.setState(prevState => ({
+            ...prevState,
+            images: [...prevState.images, ...data.hits],
+            total: prevState.total + data.hits.length,
+          }))
         )
         .catch(error => this.setState({ error }))
         .finally(() => this.setState({ isLoading: false }));
@@ -61,24 +71,7 @@ class ImageGallery extends Component {
   };
 
   loadMoreHandleClick = () => {
-    this.setState(
-      prev => ({ ...prev, page: prev.page + 1 }),
-      () => {
-        const { page } = this.state;
-        const { searchQuery } = this.props;
-
-        getImage({ q: searchQuery, page, per_page: this.perPage })
-          .then(data =>
-            this.setState(prevState => ({
-              ...prevState,
-              images: [...prevState.images, ...data.hits],
-              total: prevState.total + data.hits.length,
-            }))
-          )
-          .catch(error => this.setState({ error }))
-          .finally(() => this.setState({ isLoading: false }));
-      }
-    );
+    this.setState(prev => ({ ...prev, page: prev.page + 1 }));
   };
 
   // Обработчик открытия модального окна
@@ -93,10 +86,6 @@ class ImageGallery extends Component {
 
   render() {
     const { images, isLoading, error, showModal, largeImageUrl } = this.state;
-
-    if (isLoading) {
-      return <Loader />;
-    }
 
     if (error) {
       return <p>Error: {error.message}</p>;
@@ -113,6 +102,7 @@ class ImageGallery extends Component {
             />
           ))}
         </ul>
+        {isLoading && <Loader />}
         {images.length > 0 && <Button onClick={this.loadMoreHandleClick} />}
         {showModal && (
           <Modal largeImageURL={largeImageUrl} onClose={this.closeModal} />
